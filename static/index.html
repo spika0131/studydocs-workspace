@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>無題のドキュメント - Google ドキュメント</title>
+  <link id="dynamic-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%232196f3' d='M37,45H11c-1.657,0-3-1.343-3-3V6c0-1.657,1.343-3,3-3h19l10,10v29C40,43.657,38.657,45,37,45z'/%3E%3Cpath fill='%23bbdefb' d='M40 13L30 13 30 3z'/%3E%3Cpath fill='%23fff' d='M15 23H33V25H15zM15 28H33V30H15zM15 33H27V35H15z'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261011_4" />
+</head>
+<body>
+
+  <!-- Top Navigation & Stealth Control Bar -->
+  <header class="app-header">
+    <div class="brand-area" id="home-logo-btn" title="ホーム画面に戻る">
+      <div class="brand-icon" id="brand-icon-box">D</div>
+      <div class="brand-text">
+        <span class="brand-title" id="brand-title-text">StudyDocs Media</span>
+        <span class="brand-subtitle">マルチ中継・ステルス視聴ワークスペース</span>
+      </div>
+    </div>
+
+    <!-- Smart Search / Direct URL Input -->
+    <div class="search-container">
+      <form class="search-form" id="search-form" autocomplete="off">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="キーワード検索、またはYouTubeのURL / 動画IDを貼り付け..."
+        />
+        <button type="button" id="search-clear-btn" class="search-clear-btn" title="クリア">✕</button>
+        <button type="submit" class="search-submit-btn">
+          <span>🔍 検索 / 開く</span>
+        </button>
+      </form>
+      <div class="suggest-dropdown" id="suggest-dropdown"></div>
+    </div>
+
+    <!-- Stealth & Utility Actions -->
+    <div class="header-actions">
+      <button type="button" class="btn" id="about-blank-btn" title="アドレスバーや履歴にURLを残さず about:blank 内で開きます">
+        🕶️ about:blank起動
+      </button>
+      <button type="button" class="btn" id="theme-toggle-btn" title="ダーク動画UIとドキュメント風白背景UIを切り替えます">
+        📄 資料風UI切替
+      </button>
+      <button type="button" class="btn" id="stealth-settings-btn" title="タブ名偽装・パニックキー設定">
+        🎭 偽装設定
+      </button>
+      <button type="button" class="btn btn-panic" id="panic-trigger-btn" title="即座にGoogleドキュメント風レポート画面に偽装します（ショートカット: Escキー）">
+        🚨 緊急偽装 [Esc]
+      </button>
+    </div>
+  </header>
+
+  <!-- Category & Library Sub-bar -->
+  <nav class="category-bar">
+    <div class="category-tabs" id="category-tabs">
+      <button class="cat-pill active" data-cat="trending">🔥 急上昇・話題</button>
+      <button class="cat-pill" data-cat="music">🎵 音楽・MV</button>
+      <button class="cat-pill" data-cat="gaming">🎮 ゲーム・実況</button>
+      <button class="cat-pill" data-cat="study">📚 学習・解説</button>
+      <button class="cat-pill" data-cat="tech">💻 テクノロジー</button>
+      <button class="cat-pill" data-cat="comedy">😂 お笑い・エンタメ</button>
+      <button class="cat-pill" data-cat="bgm">🎧 作業用BGM</button>
+      <button class="cat-pill" data-cat="favorites">⭐ お気に入り (<span id="fav-count">0</span>)</button>
+      <button class="cat-pill" data-cat="history">🕒 再生履歴</button>
+    </div>
+    <div class="stealth-status-pill" title="現在の通信保護ステータス">
+      <span class="status-dot"></span>
+      <span id="connection-mode-indicator">保護通信: サーバー完全中継</span>
+    </div>
+  </nav>
+
+  <!-- Main Workspace -->
+  <main class="main-container">
+
+    <!-- Watch Section (Hidden until a video is selected) -->
+    <section class="watch-section" id="watch-section">
+      <!-- Left Column: Multi-mode Player + Video Info + Comments -->
+      <div class="watch-primary-col">
+
+        <!-- 4-Mode Playback Engine Switcher -->
+        <div class="mode-selector-bar">
+          <div class="mode-tabs" id="playback-mode-tabs">
+            <button class="mode-tab active" data-mode="proxy" title="サーバーが動画・音声データを直接中継します。PCからYouTubeへの通信が発生せず最も制限突破力が高いモードです。">
+              🛡️ 1. サーバー完全中継 (推奨)
+            </button>
+            <button class="mode-tab" data-mode="audio" title="映像を非表示にして音声のみをサーバー中継で再生します。通信量を90%削減し背後から画面を見られても安心です。">
+              🎧 2. 音声のみ / BGMステルス
+            </button>
+            <button class="mode-tab" data-mode="nocookie" title="youtube-nocookie.comのプライバシー強化埋め込みプレーヤーで再生します。">
+              🔒 3. No-Cookie埋め込み
+            </button>
+            <button class="mode-tab" data-mode="mirror" title="外部Invidious/Pipedミラーや軽量ストリーム互換モードで再生します。">
+              🌐 4. ミラー / 軽量中継
+            </button>
+          </div>
+
+          <div class="toolbar-group">
+            <button class="btn btn-sm" id="close-player-btn" title="プレーヤーを閉じて一覧に戻る">✕ 閉じる</button>
+          </div>
+        </div>
+
+        <!-- Video / Audio / Embed Stage -->
+        <div class="player-stage-wrapper" id="player-stage-wrapper">
+          <div class="player-aspect-box" id="player-aspect-box">
+            <!-- Dynamically populated by app.js based on mode -->
+          </div>
+        </div>
+
+        <!-- Player Controls & Quality / Speed / Size / Download Toolbar -->
+        <div class="player-toolbar">
+          <div class="toolbar-group">
+            <span class="toolbar-label">画質:</span>
+            <select id="quality-select" class="toolbar-select" title="再生画質を選択">
+              <option value="360p_combined">360p 標準 (高速・単一ストリーム)</option>
+            </select>
+
+            <span class="toolbar-label">速度:</span>
+            <select id="speed-select" class="toolbar-select" title="再生速度">
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1" selected>1.0x (標準)</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="1.75">1.75x</option>
+              <option value="2">2.0x</option>
+            </select>
+
+            <span class="toolbar-label">字幕:</span>
+            <select id="subtitle-select" class="toolbar-select" title="字幕表示 (サーバー中継モード)">
+              <option value="off">字幕オフ</option>
+            </select>
+
+            <span class="toolbar-label">画面サイズ:</span>
+            <select id="screen-size-select" class="toolbar-select" title="周囲から見えにくくするため動画サイズを縮小できます">
+              <option value="100">標準 (100%)</option>
+              <option value="65">中サイズ (65%)</option>
+              <option value="38">ステルス小窓 (38%)</option>
+              <option value="theater">シアター大画面</option>
+            </select>
+
+            <button type="button" class="btn btn-sm" id="mute-toggle-btn" title="音声ミュート切替">🔊 100%</button>
+            <input type="range" id="volume-slider" min="0" max="100" value="100" style="width:76px; cursor:pointer; accent-color:var(--accent);" title="音量調整 (0%〜100%)" />
+          </div>
+
+          <div class="toolbar-group">
+            <button class="btn btn-sm" id="loop-toggle-btn" title="リピート再生切替">🔁 ループ: OFF</button>
+            <button class="btn btn-sm" id="pip-btn" title="ピクチャーインピクチャー (別ウィンドウ小窓)">🖼️ PiP小窓</button>
+            <a class="btn btn-sm" id="download-video-btn" href="#" download title="MP4動画をPCに保存">📥 動画保存</a>
+            <a class="btn btn-sm" id="download-audio-btn" href="#" download title="M4A音声ファイルをPCに保存">🎵 音声保存</a>
+          </div>
+        </div>
+
+        <!-- Video Info, Channel, Chapters, Description & Comments -->
+        <div class="video-info-card">
+          <h1 class="video-main-title" id="video-title">動画タイトルを読み込み中...</h1>
+
+          <div class="video-meta-row">
+            <div class="toolbar-group">
+              <div class="channel-badge" id="channel-search-btn" title="クリックしてこのチャンネルの動画を検索">
+                <span>📺</span>
+                <span class="channel-name" id="video-channel">チャンネル名</span>
+              </div>
+              <button class="btn btn-sm" id="favorite-toggle-btn">☆ お気に入り追加</button>
+              <button class="btn btn-sm" id="copy-id-btn" title="動画IDまたはURLをコピー">🔗 IDコピー</button>
+            </div>
+
+            <div class="video-stats">
+              <span id="video-views">👁️ - 回視聴</span>
+              <span id="video-likes">👍 -</span>
+              <span id="video-date">📅 -</span>
+            </div>
+          </div>
+
+          <!-- Chapters Strip (shown when video has chapters) -->
+          <div class="chapters-strip" id="chapters-strip" style="display: none;"></div>
+
+          <!-- Detail Sub-tabs: Description / Comments / Study Notes -->
+          <div class="detail-tabs-header">
+            <button class="detail-tab-btn active" data-detail-tab="desc">📋 概要欄・タイムスタンプ</button>
+            <button class="detail-tab-btn" data-detail-tab="comments">💬 コメント (<span id="comment-count-badge">...</span>)</button>
+            <button class="detail-tab-btn" data-detail-tab="notes">📝 学習メモ帳 (自動保存)</button>
+          </div>
+
+          <div class="description-box" id="video-description">概要欄を読み込み中...</div>
+
+          <div class="comments-box" id="video-comments">
+            <div class="loading-state">コメントを読み込み中...</div>
+          </div>
+
+          <div class="notes-box" id="video-notes-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:0.8rem; color:var(--text-muted);">再生中の動画に関するメモや学習ノートを記録できます（このブラウザ内に自動保存されます）</span>
+              <button class="btn btn-sm" id="insert-timestamp-btn">⏱️ 現在の再生時間を挿入</button>
+            </div>
+            <textarea id="study-notes-textarea" class="notes-textarea" placeholder="ここに講義メモや気になったポイントを入力..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Related Videos & Playlist Queue -->
+      <aside class="related-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">🎞️ 関連動画・次のおすすめ</span>
+          <label style="font-size: 0.78rem; display:flex; align-items:center; gap:0.35rem; cursor:pointer; color:var(--text-secondary);">
+            <input type="checkbox" id="autoplay-next-checkbox" checked />
+            自動連続再生
+          </label>
+        </div>
+        <div class="related-list" id="related-list">
+          <div class="loading-state">関連動画を取得中...</div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Main Video Feed Grid (Trending / Search Results / Favorites / History) -->
+    <section class="feed-section">
+      <div class="feed-header">
+        <h2 class="feed-title" id="feed-heading">🔥 急上昇・話題の動画</h2>
+        <div class="toolbar-group" id="feed-extra-actions"></div>
+      </div>
+
+      <div class="video-grid" id="video-grid">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>動画をサーバー経由で安全に取得しています...</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Stealth & Camouflage Settings Modal -->
+  <div class="modal-backdrop" id="stealth-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">🎭 ステルス・カモフラージュ設定</h3>
+        <button class="btn btn-sm" id="close-stealth-modal-btn">✕ 閉じる</button>
+      </div>
+
+      <div class="setting-row">
+        <label>1. ブラウザのタブ名＆アイコン偽装プリセット</label>
+        <div class="preset-grid" id="cloak-presets">
+          <button class="preset-btn active" data-preset="gdocs">📘 Google ドキュメント</button>
+          <button class="preset-btn" data-preset="gsheets">📗 Google スプレッドシート</button>
+          <button class="preset-btn" data-preset="classroom">🎓 Google Classroom</button>
+          <button class="preset-btn" data-preset="wikipedia">📚 Wikipedia (日本史)</button>
+          <button class="preset-btn" data-preset="notion">📝 Notion 学習ノート</button>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" id="custom-tab-title" class="setting-input" placeholder="任意のカスタムタブ名を入力..." />
+          <button class="btn btn-accent" id="apply-custom-title-btn">適用</button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>2. パニックキー（緊急偽装画面への切替ショートカット）</label>
+        <select id="panic-key-select" class="setting-input">
+          <option value="Escape">Esc キー（1回押しで即座に偽装画面へ切替・もう一度で復帰）</option>
+          <option value="F2">F2 キー</option>
+          <option value="Backquote">@ / ` キー（半角/全角付近）</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label>3. 緊急偽装中の音声動作</label>
+        <select id="panic-audio-select" class="setting-input">
+          <option value="pause">完全に一時停止する（周囲に音も漏らさない・安全最優先）</option>
+          <option value="keep">画面だけレポートに偽装し、音声はBGMとして流し続ける（イヤホン時向け）</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+          <input type="checkbox" id="auto-panic-blur-checkbox" />
+          別タブや別アプリに切り替えた時、自動的にレポート偽装画面にする
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <label>4. ミラーモード用 外部インスタンス設定 (モード4選択時)</label>
+        <input type="text" id="custom-mirror-input" class="setting-input" value="https://inv.nadeko.net" placeholder="例: https://inv.nadeko.net" />
+      </div>
+
+      <div class="setting-row">
+        <label>5. ☁️ クラウド稼働時用 YouTube Cookie 登録（Bot判定が出る場合のみ） <span id="cookie-status-badge" style="font-size:0.75rem; color:var(--accent); font-weight:600;"></span></label>
+        <textarea id="youtube-cookies-input" class="setting-input" rows="3" placeholder="# Netscape HTTP Cookie File 形式のテキストを貼り付け（Hugging Face等のクラウドIPでBot判定が出た場合に使用）" style="font-family:monospace; font-size:0.76rem; resize:vertical;"></textarea>
+        <div style="display:flex; gap:0.5rem; margin-top:0.4rem;">
+          <button class="btn btn-accent btn-sm" id="save-cookies-btn">💾 Cookieをサーバーに反映</button>
+          <button class="btn btn-sm" id="clear-cookies-btn">クリア</button>
+        </div>
+      </div>
+
+      <div class="setting-row" style="padding-top: 0.75rem; border-top: 1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:0.8rem; color:var(--text-muted);">共有PC・管理PC用の履歴クリーンアップ</span>
+        <button class="btn btn-panic btn-sm" id="wipe-all-data-btn">🗑️ 再生履歴・お気に入りを全消去</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       PANIC OVERLAY: Realistic Google Docs Academic Report Screen
+       ======================================================================== -->
+  <div class="panic-overlay" id="panic-overlay">
+    <div class="gdocs-header">
+      <div class="gdocs-title-row">
+        <div class="gdocs-icon">≡</div>
+        <div>
+          <div class="gdocs-doc-name" contenteditable="true" spellcheck="false">現代社会における情報通信技術の変遷と課題_提出用レポート</div>
+          <div class="gdocs-menu-bar">
+            <span>ファイル</span>
+            <span>編集</span>
+            <span>表示</span>
+            <span>挿入</span>
+            <span>表示形式</span>
+            <span>ツール</span>
+            <span>拡張機能</span>
+            <span>ヘルプ</span>
+            <span style="color:#80868b; margin-left:8px;">最終編集: 数秒前（ドライブに保存済み）</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="background:#c2e7ff; color:#001d35; padding:6px 16px; border-radius:999px; font-size:13px; font-weight:600;">🔒 非公開（自分のみ）</span>
+      </div>
+    </div>
+
+    <div class="gdocs-toolbar">
+      <span>↩️</span>
+      <span>↪️</span>
+      <span>🖨️</span>
+      <span>100% ▾</span>
+      <span>|</span>
+      <span>標準テキスト ▾</span>
+      <span>|</span>
+      <span>Noto Sans JP ▾</span>
+      <span>|</span>
+      <span>-  11  +</span>
+      <span>|</span>
+      <b>B</b>
+      <i>I</i>
+      <u>U</u>
+      <span>A</span>
+      <span>|</span>
+      <span>≡  ≣  ⋮≡</span>
+    </div>
+
+    <div class="gdocs-workspace">
+      <div class="gdocs-page" contenteditable="true" spellcheck="false">
+        <h1>現代社会における情報通信技術（ICT）の変遷と教育・産業への影響に関する考察</h1>
+        <p style="text-align:right; color:#5f6368; font-size:13px;">提出日: 2026年10月 / 総合探究・情報科学レポート</p>
+
+        <h2>1. はじめに（研究の背景と目的）</h2>
+        <p>
+          21世紀初頭からのインターネットインフラの急速な普及と、クラウドコンピューティングおよびモバイル端末の高度化により、私たちの情報収集・学習・コミュニケーションの形態は根本的な変容を遂げた。特に教育機関および企業組織においては、1人1台端末の配備とクラウドベースの協働学習環境の導入が進み、場所や時間の制約を超えた知識アクセスが可能となっている。
+        </p>
+        <p>
+          本稿では、情報通信技術の発展過程を整理するとともに、ネットワークセキュリティと情報の利活用のバランス、ならびに今後のデジタルリテラシー教育のあり方について多角的に検証する。
+        </p>
+
+        <h2>2. 情報ネットワークの基礎構造とデータ伝送の仕組み</h2>
+        <p>
+          インターネットにおける通信は、TCP/IPプロトコルスイートを基盤としたパケット交換方式によって成り立っている。クライアント端末から送信されたリクエストは、DNS（Domain Name System）による名前解決を経て目的のサーバーへと到達し、HTTPS（TLS暗号化通信）によって通信経路上の盗聴や改ざんから保護される。
+        </p>
+        <p>
+          また、近年の大容量マルチメディアデータの配信においては、CDN（Content Delivery Network）やエッジサーバーによるキャッシュ機構、およびHTTP Rangeリクエストを用いた部分ストリーム転送技術が不可欠な役割を果たしており、ネットワーク帯域の効率的な利用と低遅延化を実現している。
+        </p>
+
+        <h2>3. 考察メモ・要約整理（自由に追記可能）</h2>
+        <p>
+          ・重要語句の整理：プロトコル階層モデル、エンドツーエンド暗号化、プロキシサーバーによる中継制御とキャッシュ最適化。<br/>
+          ・次回までの課題：文献資料の第4章（情報セキュリティポリシーとアクセス制御）の要約を300字程度でまとめること。
+        </p>
+      </div>
+    </div>
+
+    <div class="gdocs-statusbar">
+      <div>ページ 1 / 1  •  文字数: 642 文字  •  言語: 日本語</div>
+      <div class="secret-return-trigger" id="panic-return-btn" title="クリックまたは Esc キーで元の画面に戻ります">
+        <span id="panic-bgm-indicator">ステータス: オンライン同期完了 (Escで復帰)</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20261011_4"></script>
+</body>
+</html>
